@@ -1,0 +1,9 @@
+div,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td,table{ margin:0; padding:0; }
+input,form,h2 { display:inline; }
+body { font-family:'Lucida Sans Unicode', 'Lucida Grande'; font-size:12px; line-height:16px; color:#224; }
+p {font-family:'Lucida Sans Unicode', 'Lucida Grande'; font-size:12px; }
+
+.message_field { font-family:'Lucida Sans Unicode', 'Lucida Grande'; border-bottom:1px solid #000; padding:2px; font-size:20px; border-top:0; border-left:0; border-right:0; }
+.posted_message { font-size:100px; font-weight:normal; line-height:100px; padding:0 5px 5px 5px;}
+
+.message_entry { bottom:7; height:30px; left:10; overflow:hidden; position:fixed; width:100%; z-index:10; -moz-background-clip:border; -moz-background-inline-policy:continuous; -moz-background-origin:padding; }
