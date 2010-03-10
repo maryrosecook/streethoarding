@@ -8,10 +8,16 @@ $(window).load(function() {
 			return;
 			
 		var message = $("#message_field").attr("value").replace("\n", "");
-		if(util.isBlank(message)) // add condition to check for lameness
+		var errorMessage = postable(message);
+		if(errorMessage === null)
+		{
 			sendMessage(message);
+			updateErrorMessage(""); // blank out error
+			$("#message_field").attr("value", ""); // clear the entry field.
+		}
+		else
+			updateErrorMessage(errorMessage);
 		
-		$("#message_field").attr("value", ""); // clear the entry field.
 	});
 
 	longPoll(); // start up the long poller
@@ -26,9 +32,28 @@ function updateMessage(message) {
 	$("#posted_message").html(message);
 }
 
+function updateErrorMessage(message) {
+	$("#error_message").html(message);
+}
+
+
+
+function postable(message) {
+	var errorMessage = null;
+	if(util.isBlank(message))
+		errorMessage = "";
+	else if(v.isTooLong(message))
+		errorMessage = "tooo long";
+	else if(util.isBasically(v.stupid, message))
+		errorMessage = "be more original";
+	else if(util.isBasically(v.diez, message))
+		errorMessage = "oh, for Christ's sake";
+		
+	return errorMessage;
+}
+
 var transmission_errors = 0;
 var prevMessage = "";
-
 function longPoll (data) {
 	if (transmission_errors > 2) {
 		showConnect();
@@ -61,6 +86,35 @@ function longPoll (data) {
 util = {
 	isBlank: function(text) {
 		var blank = /^\s*$/;
-		return (text.match(blank) == null);
+		return (text.match(blank) !== null);
+	},
+	
+	trim: function(str) {
+		return str.replace(/^\s+|\s+$/g,"");
+	},
+	
+	isBasically: function(arr, text) {
+		var is = false;
+		text = this.trim(text).toLowerCase();
+		text = text.replace(/\s/g, "spacespacespace").replace(/\W/g, "").replace(/spacespacespace/g, " ");
+		for(var i in arr)
+			if(text == arr[i])
+			{
+				is = true;
+				break;
+			}
+
+		return is;
+	}
+}
+
+
+v = {
+	stupid: ["cock", "fag"],
+	diez: ["a team"],
+	MAX_LENGTH: 77,
+	
+	isTooLong: function(text) {
+		return text.length > this.MAX_LENGTH;
 	}
 }
