@@ -1,5 +1,44 @@
-Hoarding
+Street hoarding
+Write on the street.
+
+maryrosecook
 http://maryrosecook.com
 maryrosecook@maryrosecook.com
 
-Hoarding upon which you, and everyone else, can write.
+---
+
+Thanks
+
+- Ryan Dahl for Node.js
+	http://nodejs.org
+- Brian Hammond for the Node.js Redis client
+	http://github.com/fictorial/redis-node-client/
+
+---
+
+Initial setup
+
+- Install Node.js
+	- In your terminal
+			git clone git://github.com/ry/node.git
+			cd node
+			./configure
+			make
+			sudo make install
+
+- Install Redis
+	- In your terminal
+			wget http://redis.googlecode.com/files/redis-1.2.5.tar.gz
+			tar xzvf redis-1.2.5.tar.gz
+			cd redis-1.2.5
+			make
+			sudo mv redis-server /usr/bin/
+			sudo mv redis-cli /usr/bin/
+
+- Install Chalk Graffiti
+	- In your terminal
+			git clone git://github.com/maryrosecook/chalkgraffiti
+			cd chalkgraffiti
+			node server.js
+	- In your web browser
+			- Visit http://localhost:3000

@@ -8,24 +8,33 @@ $(window).load(function() {
 			return;
 			
 		var message = $("#message_field").attr("value").replace("\n", "");
-		var errorMessage = postable(message);
+		var errorMessage = clientValid(message);
 		if(errorMessage === null)
-		{
-			sendMessage(message);
-			updateErrorMessage(""); // blank out error
-			$("#message_field").attr("value", ""); // clear the entry field.
-		}
+			tryToSendMessage(message);
 		else
 			updateErrorMessage(errorMessage);
-		
 	});
 
 	longPoll(); // start up the long poller
 });
 
+// if server says message is unique, sends message to server; otherwise, shows error
+function tryToSendMessage(message) {
+	jQuery.get("/unique_chalk",
+						{ message: message },
+						function (data) {
+							if(data && data.message) {
+								jQuery.get("/send_message", { message: message }, function (data) {} , "json");
+								updateErrorMessage(""); // blank out error
+								$("#message_field").attr("value", ""); // clear the entry field.
+							}
+							else
+								updateErrorMessage("said before");
+							
+						}, "json");
+}
 
-function sendMessage(message) {
-	jQuery.get("/send_message", {message: message}, function (data) { }, "json");
+function isGhostChalk(message) {
 }
 
 function updateMessage(message) {
@@ -37,8 +46,8 @@ function updateErrorMessage(message) {
 }
 
 
-
-function postable(message) {
+// returns true if message passes basic client-only checks
+function clientValid(message) {
 	var errorMessage = null;
 	if(util.isBlank(message))
 		errorMessage = "";
@@ -77,7 +86,7 @@ function longPoll (data) {
 						 transmission_errors = 0;
 						 setTimeout(function () {
 							 longPoll(data);
-						 }, 1000);
+						 }, 100);
 					 }
 				 });
 }
