@@ -7,11 +7,21 @@
 	</head>
 
 	<body>
-		<div id="posted_message" class="posted_message">
+		<div class="menu">
+			<span id="countdown" class="countdown"></span>
+			<span id="cancel" class="cancel" style="display:none;">
+				<a href='/'>&otimes;</a>
+			</span>
+			<span id="replay">
+				<a href="#" onclick="replay();">&reg;</a>
+			</span>
+			<a href="#" onclick="credits();">&copy;</a>
 		</div>
 		
+		<div id="posted_message" class="posted_message"></div>
+		
 		<div class="message_entry_area">
-			<input type="text" id="message_field" class="message_field" size=65 maxlength=77/>
+			<input type="text" id="message_field" class="message_field" size="65" maxlength="77"/>
 			<span class="error_message" id="error_message"></span>
 		</div>
 	</body>

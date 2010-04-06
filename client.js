@@ -30,15 +30,15 @@ function tryToSendMessage(message) {
 							}
 							else
 								updateErrorMessage("said before");
-							
 						}, "json");
-}
-
-function isGhostChalk(message) {
 }
 
 function updateMessage(message) {
 	$("#posted_message").html(message);
+}
+
+function updateCountdown(i) {
+	$("#countdown").html(i);
 }
 
 function updateErrorMessage(message) {
@@ -65,7 +65,6 @@ var transmission_errors = 0;
 var prevMessage = "";
 function longPoll (data) {
 	if (transmission_errors > 2) {
-		showConnect();
 		return;
 	}
 
@@ -90,7 +89,6 @@ function longPoll (data) {
 					 }
 				 });
 }
-
 
 util = {
 	isBlank: function(text) {
@@ -117,13 +115,69 @@ util = {
 	}
 }
 
-
 v = {
-	stupid: ["cock", "fag"],
+	stupid: ["fag", "cock"],
 	diez: ["a team"],
 	MAX_LENGTH: 77,
 	
 	isTooLong: function(text) {
 		return text.length > this.MAX_LENGTH;
 	}
+}
+
+// calls server to get all messages up to now, displays each one
+function replay(messages) {
+	if(messages == null)
+	{
+		$("#cancel").show();
+		$("#replay").hide();
+		$.ajax({ cache: false,
+					 	 type: "GET",
+					 	 url: "/messages",
+					 	 dataType: "json",
+					 	 error: function () {},
+					   success: function (data) {
+							 replay(data.messages);
+						 }
+					 });
+	}
+	else
+	{
+		setTimeout(function () {
+								 var nextMessage = messages.pop();
+			           while(!replayable(nextMessage) && nextMessage != null)
+									 nextMessage = messages.pop();
+
+                 if(nextMessage != null)
+								 {
+             		 	 updateMessage(nextMessage);
+                 	 updateCountdown(messages.length);
+ 						 		 	 replay(messages);
+								 }
+							 }, 100);
+	}
+}
+
+// returns true if this message will probably not fuck up the site
+function replayable(message) {
+	if(message == null)
+		return false;
+	if(message.match(/alert/) !== null)
+		return false;
+	else if(message.match(/location/) !== null)
+	  return false;
+	else if(message.match(/document/) !== null)
+		return false;
+	else if(message.match(/while/) !== null)
+		return false;
+	else if(message.match(/tryToSendMessage/) !== null)
+		return false;
+	else if(message.match(/posted_message/) !== null)
+		return false;
+	else
+		return true;
+}
+
+function credits() {
+	updateMessage("<a href='http://github.com/maryrosecook/streethoarding'>Code</a> by <a href='http://maryrosecook.com'>maryrosecook</a>, based on <a href='http://chat.nodejs.org/'>chat</a> by <a href='http://github.com/ry'>Ryan</a>.");
 }

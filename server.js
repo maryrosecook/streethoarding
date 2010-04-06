@@ -11,7 +11,6 @@ PORT = 3000;
 fu.listen(PORT, HOST);
 initialSetup();
 
-
 // setup routes to files
 fu.get("/", fu.staticHandler("index.html"));
 fu.get("/main.css", fu.staticHandler("main.css"));
@@ -21,7 +20,6 @@ fu.get("/jquery-1.2.6.min.js", fu.staticHandler("jquery-1.2.6.min.js"));
 // lets client send message to server
 fu.get("/send_message", function (req, res) {
 	var message = qs.parse(url.parse(req.url).query).message;
-	sys.puts(message);
 	storeMessage(message);
 	res.simpleJSON(200, {});
 });
@@ -32,6 +30,19 @@ fu.get("/latest_message", function (req, res) {
 	redisClient.lindex('messages', 0, function (err, value) {
 		redisClient.close();
 		res.simpleJSON(200, { message: value });
+	});
+});
+
+// returns all messages sent to client
+fu.get("/messages", function (req, res) {
+	var redisClient = new redis.Client();
+	redisClient.lrange('messages', 0, -1, function (err, value) {
+		redisClient.close();
+		messages = []
+		for(var i in value)
+			messages.push(value[i]);
+			
+		res.simpleJSON(200, { messages: messages });
 	});
 });
 
