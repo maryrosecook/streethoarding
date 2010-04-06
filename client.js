@@ -130,7 +130,7 @@ function replay(messages) {
 	if(messages == null)
 	{
 		$("#cancel").show();
-		$("#replay").hide();
+		$("#replay_and_credits").hide();
 		$.ajax({ cache: false,
 					 	 type: "GET",
 					 	 url: "/messages",

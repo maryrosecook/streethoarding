@@ -6,10 +6,10 @@ p {font-family:'Lucida Sans Unicode', 'Lucida Grande'; font-size:12px; }
 a { color:#224; }
 a:visited { color:#224; }
 
-.menu { float:right; }
+.menu { float:right; font-size:13px; }
 .menu a { text-decoration:none; }
-.cancel { font-size:14.5px; line-height:12px; }
-.countdown { font-size:10.5px; }
+.cancel { font-size:16px; line-height:12px; }
+.countdown { font-size:12px; }
 
 .message_field { font-family:'Lucida Sans Unicode', 'Lucida Grande'; border-bottom:1px solid #000; padding:2px; font-size:20px; border-top:0; border-left:0; border-right:0; }
 .posted_message { font-size:100px; font-weight:normal; line-height:100px; padding:0 5px 5px 5px; }
