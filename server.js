@@ -40,7 +40,7 @@ fu.get("/messages", function (req, res) {
 		redisClient.close();
 		messages = []
 		for(var i in value)
-			messages.push(value[i]);
+			messages.unshift(value[i]);
 			
 		res.simpleJSON(200, { messages: messages });
 	});

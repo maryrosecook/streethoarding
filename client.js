@@ -154,7 +154,7 @@ function replay(messages) {
                  	 updateCountdown(messages.length);
  						 		 	 replay(messages);
 								 }
-							 }, 100);
+							 }, 200);
 	}
 }
 
