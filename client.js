@@ -21,16 +21,16 @@ $(window).load(function() {
 // if server says message is unique, sends message to server; otherwise, shows error
 function tryToSendMessage(message) {
 	jQuery.get("/unique_chalk",
-						{ message: message },
-						function (data) {
-							if(data && data.message) {
-								jQuery.get("/send_message", { message: message }, function (data) {} , "json");
-								updateErrorMessage(""); // blank out error
-								$("#message_field").attr("value", ""); // clear the entry field.
-							}
-							else
-								updateErrorMessage("said before");
-						}, "json");
+						 	{ message: message },
+							function (data) {
+								if(data && data.message) {
+									jQuery.get("/send_message", { message: message }, function (data) {} , "json");
+									updateErrorMessage(""); // blank out error
+									$("#message_field").attr("value", ""); // clear the entry field.
+								}
+								else
+									updateErrorMessage("said before");
+							}, "json");
 }
 
 function updateMessage(message) {
@@ -44,7 +44,6 @@ function updateCountdown(i) {
 function updateErrorMessage(message) {
 	$("#error_message").html(message);
 }
-
 
 // returns true if message passes basic client-only checks
 function clientValid(message) {
@@ -61,10 +60,10 @@ function clientValid(message) {
 	return errorMessage;
 }
 
-var transmission_errors = 0;
+var stop_transmitting = false;
 var prevMessage = "";
 function longPoll (data) {
-	if (transmission_errors > 2) {
+	if (stop_transmitting === true) {
 		return;
 	}
 
@@ -73,16 +72,15 @@ function longPoll (data) {
 		prevMessage = data.message;
 	}
 
-	$.ajax({ cache: false
-				 , type: "GET"
-				 , url: "/latest_message"
-				 , dataType: "json"
-				 , error: function () {
-						 transmission_errors += 1;
+	$.ajax({ cache: false,
+				 	 type: "GET",
+				 	 url: "/latest_message",
+				 	 dataType: "json",
+				 	 error: function () {
+						 stop_transmitting = true;
 						 setTimeout(longPoll, 10*1000);
-					 }
-				 , success: function (data) {
-						 transmission_errors = 0;
+					 },
+				 	 success: function (data) {
 						 setTimeout(function () {
 							 longPoll(data);
 						 }, 100);
@@ -127,6 +125,7 @@ v = {
 
 // calls server to get all messages up to now, displays each one
 function replay(messages) {
+	stop_transmitting = true; // want to stop gathering latest messages
 	if(messages == null)
 	{
 		$("#cancel").show();
