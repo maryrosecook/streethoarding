@@ -123,13 +123,18 @@ v = {
 	}
 }
 
+// removes all nav and replaces it with a home/cancel link
+function switchNavToHomeLink() {
+	$("#cancel").show();
+	$("#replay_and_credits").hide();
+}
+
 // calls server to get all messages up to now, displays each one
 function replay(messages) {
 	stop_transmitting = true; // want to stop gathering latest messages
 	if(messages == null)
 	{
-		$("#cancel").show();
-		$("#replay_and_credits").hide();
+		switchNavToHomeLink();
 		$.ajax({ cache: false,
 					 	 type: "GET",
 					 	 url: "/messages",
@@ -178,5 +183,6 @@ function replayable(message) {
 }
 
 function credits() {
+	switchNavToHomeLink();
 	updateMessage("<a href='http://github.com/maryrosecook/streethoarding'>Code</a> by <a href='http://maryrosecook.com'>maryrosecook</a>, based on <a href='http://chat.nodejs.org/'>chat</a> by <a href='http://github.com/ry'>Ryan</a>.");
 }
