@@ -17,7 +17,7 @@ $(window).load(function() {
 
 	// if mouse moves and replaying, update displayed messages
 	$('body').mousemove(function(event) {
-	  if(replaying === true)
+	  if(replaying == true)
 		{
 			replayMessageI = selectReplayMessageI(event);
 			updateCountdown(replayMessageI);
@@ -48,7 +48,7 @@ function updateMessage(message) {
 }
 
 function updateCountdown(i) {
-	$("#countdown").html(i);
+	$("#countdown").html(i.toString());
 }
 
 function updateErrorMessage(message) {
@@ -73,7 +73,7 @@ function clientValid(message) {
 var transmission_errors = 0;
 var prevMessage = "";
 function longPoll (data) {
-	if (transmission_errors > 2 || replaying === true) {
+	if (transmission_errors > 2 || replaying == true) {
 		return;
 	}
 
@@ -135,9 +135,10 @@ v = {
 }
 
 // removes all nav and replaces it with a home/cancel link
-function switchNavToHomeLink() {
+function switchToNonInteractiveMode() {
 	$("#cancel").show();
 	$("#replay_and_credits").hide();
+	$("#message_entry_area").hide();
 }
 
 var replaying = false;
@@ -146,9 +147,9 @@ var messages = null;
 function replaySetup() {
 	replaying = true;
 	currentReplayMessageI = 0;
-	if(messages == null)
+	if(messages === null)
 	{
-		switchNavToHomeLink();
+		switchToNonInteractiveMode();
 		$.ajax({ cache: false,
 					 	 type: "GET",
 					 	 url: "/messages",
@@ -172,8 +173,8 @@ var currentReplayMessageI = 0;
 // goes through messages faster if mouse moved faster
 function selectReplayMessageI(event) {
 	// work out how much time has passed since last measured position of mouse
-	var curTime = new Date().getTime()
-	if(prevTime === -1) // if haven't recorded a prev time, just set it to now
+	var curTime = new Date().getTime();
+	if(prevTime == -1) // if haven't recorded a prev time, just set it to now
 		prevTime = curTime;
 	
 	var multiplier = 8;
@@ -200,7 +201,7 @@ function selectReplayMessageI(event) {
 
 // returns true if this message will probably not fuck up the site
 function replayable(message) {
-	if(message == null)
+	if(message === null)
 		return false;
 	else if(message.match(/alert/) !== null)
 		return false;
@@ -219,6 +220,6 @@ function replayable(message) {
 }
 
 function credits() {
-	switchNavToHomeLink();
+	switchToNonInteractiveMode();
 	updateMessage("<a href='http://github.com/maryrosecook/streethoarding'>Code</a> by <a href='http://maryrosecook.com'>maryrosecook</a>, based on <a href='http://chat.nodejs.org/'>chat</a> by <a href='http://github.com/ry'>Ryan</a>.");
 }
