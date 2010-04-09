@@ -15,6 +15,16 @@ $(window).load(function() {
 			updateErrorMessage(errorMessage);
 	});
 
+	// if mouse moves and replaying, update displayed messages
+	$('body').mousemove(function(event) {
+	  if(replaying === true)
+		{
+			replayMessageI = selectReplayMessageI(event);
+			updateCountdown(replayMessageI);
+			updateMessage(messages[replayMessageI]);
+		}
+	});
+
 	longPoll(); // start up the long poller
 });
 
@@ -60,10 +70,10 @@ function clientValid(message) {
 	return errorMessage;
 }
 
-var stop_transmitting = false;
+var transmission_errors = 0;
 var prevMessage = "";
 function longPoll (data) {
-	if (stop_transmitting === true) {
+	if (transmission_errors > 2 || replaying === true) {
 		return;
 	}
 
@@ -77,11 +87,12 @@ function longPoll (data) {
 				 	 url: "/latest_message",
 				 	 dataType: "json",
 				 	 error: function () {
-						 stop_transmitting = true;
+						 transmission_errors += 1;
 						 setTimeout(longPoll, 10*1000);
 					 },
 				 	 success: function (data) {
 						 setTimeout(function () {
+							 transmission_errors = 0;
 							 longPoll(data);
 						 }, 100);
 					 }
@@ -129,9 +140,12 @@ function switchNavToHomeLink() {
 	$("#replay_and_credits").hide();
 }
 
+var replaying = false;
+var messages = null;
 // calls server to get all messages up to now, displays each one
-function replay(messages) {
-	stop_transmitting = true; // want to stop gathering latest messages
+function replaySetup() {
+	replaying = true;
+	currentReplayMessageI = 0;
 	if(messages == null)
 	{
 		switchNavToHomeLink();
@@ -141,32 +155,54 @@ function replay(messages) {
 					 	 dataType: "json",
 					 	 error: function () {},
 					   success: function (data) {
-							 replay(data.messages);
+							 messages = [];
+							 allMessages = data.messages;
+							 for(var i in allMessages)
+							 	 if(replayable(allMessages[i]))
+									 messages.push(allMessages[i]);
 						 }
 					 });
 	}
-	else
-	{
-		setTimeout(function () {
-								 var nextMessage = messages.pop();
-			           while(!replayable(nextMessage) && nextMessage != null)
-									 nextMessage = messages.pop();
+}
 
-                 if(nextMessage != null)
-								 {
-             		 	 updateMessage(nextMessage);
-                 	 updateCountdown(messages.length);
- 						 		 	 replay(messages);
-								 }
-							 }, 200);
-	}
+var prevX = 0;
+var prevTime = -1;
+var currentReplayMessageI = 0;
+// decides what message should be replayed, based on where the mouse is
+// goes through messages faster if mouse moved faster
+function selectReplayMessageI(event) {
+	// work out how much time has passed since last measured position of mouse
+	var curTime = new Date().getTime()
+	if(prevTime === -1) // if haven't recorded a prev time, just set it to now
+		prevTime = curTime;
+	
+	var multiplier = 6;
+	var scaler = messages.length / $(window).width(); // factor in num messages and window width
+	var speedFactor = Math.pow((1 / (curTime - prevTime)) * multiplier * scaler, 3);
+	
+	var change = (prevX - event.pageX) * speedFactor;
+	if(change > 0)
+		change = Math.ceil(change);
+	else
+		change = Math.floor(change);
+
+	currentReplayMessageI += change;
+	
+	if(currentReplayMessageI < 0)
+		currentReplayMessageI = 0;
+	else if(currentReplayMessageI > messages.length)
+		currentReplayMessageI = messages.length;
+		
+	prevTime = curTime;
+	prevX = event.pageX;
+	return currentReplayMessageI;
 }
 
 // returns true if this message will probably not fuck up the site
 function replayable(message) {
 	if(message == null)
 		return false;
-	if(message.match(/alert/) !== null)
+	else if(message.match(/alert/) !== null)
 		return false;
 	else if(message.match(/location/) !== null)
 	  return false;
