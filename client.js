@@ -176,11 +176,11 @@ function selectReplayMessageI(event) {
 	if(prevTime === -1) // if haven't recorded a prev time, just set it to now
 		prevTime = curTime;
 	
-	var multiplier = 6;
+	var multiplier = 8;
 	var scaler = messages.length / $(window).width(); // factor in num messages and window width
 	var speedFactor = Math.pow((1 / (curTime - prevTime)) * multiplier * scaler, 3);
 	
-	var change = (prevX - event.pageX) * speedFactor;
+	var change = (event.pageX - prevX) * speedFactor;
 	if(change > 0)
 		change = Math.ceil(change);
 	else
@@ -190,8 +190,8 @@ function selectReplayMessageI(event) {
 	
 	if(currentReplayMessageI < 0)
 		currentReplayMessageI = 0;
-	else if(currentReplayMessageI > messages.length)
-		currentReplayMessageI = messages.length;
+	else if(currentReplayMessageI >= messages.length - 1)
+		currentReplayMessageI = messages.length - 1;
 		
 	prevTime = curTime;
 	prevX = event.pageX;

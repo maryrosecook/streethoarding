@@ -19,10 +19,20 @@ fu.get("/jquery-1.2.6.min.js", fu.staticHandler("jquery-1.2.6.min.js"));
 
 // lets client send message to server
 fu.get("/send_message", function (req, res) {
-	var message = qs.parse(url.parse(req.url).query).message;
-	storeMessage(message);
-	res.simpleJSON(200, {});
+  var message = qs.parse(url.parse(req.url).query).message;
+  storeMessage(message, function() {
+    res.simpleJSON(200, {});
+  });
 });
+
+// put message in list and store it in quick access latest_message var
+function storeMessage(message, callback) {
+  var redisClient = new redis.Client();
+  redisClient.lpush('messages', message, function (err, value) {
+    redisClient.close();
+    callback();
+  });
+}
 
 // returns latest message to client
 fu.get("/latest_message", function (req, res) {
@@ -71,13 +81,5 @@ function initialSetup() {
 	redisClient.exists('messages', function (err, value) {
 		if(value == 0)
 			storeMessage("We liked the same music, we liked the same bands, we liked the same clothes.");
-	});
-}
-
-function storeMessage(message) {
-	// put message in list and store it in quick access latest_message var
-	var redisClient = new redis.Client();
-	redisClient.lpush('messages', message, function (err, value) {
-		redisClient.close();
 	});
 }
