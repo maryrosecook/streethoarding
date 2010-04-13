@@ -34,11 +34,14 @@ Initial setup
 
 - Install Street Hoarding
 	- In your terminal
-			redis-server
-	- In another tab in your terminal
 			git clone git://github.com/maryrosecook/streethoarding
-			cd streethoarding
+			
+- Run
+	- In your terminal
+			cd the_street_hoarding_directory
 			node server.js
+	- In another terminal
+			redis-server
 	- In your web browser
 			http://localhost:3000
 			
