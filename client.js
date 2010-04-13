@@ -15,16 +15,6 @@ $(window).load(function() {
 			updateErrorMessage(errorMessage);
 	});
 
-	// if mouse moves and replaying, update displayed messages
-	$('body').mousemove(function(event) {
-	  if(replaying == true)
-		{
-			replayMessageI = selectReplayMessageI(event);
-			updateCountdown(replayMessageI);
-			updateMessage(messages[replayMessageI]);
-		}
-	});
-
 	longPoll(); // start up the long poller
 });
 
@@ -73,10 +63,9 @@ function clientValid(message) {
 var transmission_errors = 0;
 var prevMessage = "";
 function longPoll (data) {
-	if (transmission_errors > 2 || replaying == true) {
-		return;
-	}
-
+	// if (transmission_errors > 2) {
+	// 	return;
+	// }
 	if (data && data.message && prevMessage != data.message) {
 		updateMessage(data.message);
 		prevMessage = data.message;
@@ -137,86 +126,8 @@ v = {
 // removes all nav and replaces it with a home/cancel link
 function switchToNonInteractiveMode() {
 	$("#cancel").show();
-	$("#replay_and_credits").hide();
+	$("#credits").hide();
 	$("#message_entry_area").hide();
-}
-
-var replaying = false;
-var messages = null;
-// calls server to get all messages up to now, displays each one
-function replaySetup() {
-	replaying = true;
-	currentReplayMessageI = 0;
-	if(messages === null)
-	{
-		switchToNonInteractiveMode();
-		$.ajax({ cache: false,
-					 	 type: "GET",
-					 	 url: "/messages",
-					 	 dataType: "json",
-					 	 error: function () {},
-					   success: function (data) {
-							 messages = [];
-							 allMessages = data.messages;
-							 for(var i in allMessages)
-							 	 if(replayable(allMessages[i]))
-									 messages.push(allMessages[i]);
-						 }
-					 });
-	}
-}
-
-var prevX = 0;
-var prevTime = -1;
-var currentReplayMessageI = 0;
-// decides what message should be replayed, based on where the mouse is
-// goes through messages faster if mouse moved faster
-function selectReplayMessageI(event) {
-	// work out how much time has passed since last measured position of mouse
-	var curTime = new Date().getTime();
-	if(prevTime == -1) // if haven't recorded a prev time, just set it to now
-		prevTime = curTime;
-	
-	var multiplier = 8;
-	var scaler = messages.length / $(window).width(); // factor in num messages and window width
-	var speedFactor = Math.pow((1 / (curTime - prevTime)) * multiplier * scaler, 3);
-	
-	var change = (event.pageX - prevX) * speedFactor;
-	if(change > 0)
-		change = Math.ceil(change);
-	else
-		change = Math.floor(change);
-
-	currentReplayMessageI += change;
-	
-	if(currentReplayMessageI < 0)
-		currentReplayMessageI = 0;
-	else if(currentReplayMessageI >= messages.length - 1)
-		currentReplayMessageI = messages.length - 1;
-		
-	prevTime = curTime;
-	prevX = event.pageX;
-	return currentReplayMessageI;
-}
-
-// returns true if this message will probably not fuck up the site
-function replayable(message) {
-	if(message === null)
-		return false;
-	else if(message.match(/alert/) !== null)
-		return false;
-	else if(message.match(/location/) !== null)
-	  return false;
-	else if(message.match(/document/) !== null)
-		return false;
-	else if(message.match(/while/) !== null)
-		return false;
-	else if(message.match(/tryToSendMessage/) !== null)
-		return false;
-	else if(message.match(/posted_message/) !== null)
-		return false;
-	else
-		return true;
 }
 
 function credits() {

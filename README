@@ -1,20 +1,15 @@
-Street hoarding
-Write on the street.
+Street Hoarding
+Hoarding upon which you, and everyone else, can write, or, a ruthlessly simple example of a proper Node.js program.
 
 maryrosecook
 http://maryrosecook.com
 maryrosecook@maryrosecook.com
 
----
+Requirements
 
-Thanks
-
-- Ryan Dahl for Node.js
-	http://nodejs.org
-- Brian Hammond for the Node.js Redis client
-	http://github.com/fictorial/redis-node-client/
-
----
+- Node.js 0.1.90
+- Redis 1.3.8
+- I have no idea whether this code will work with previous or future versions of Node.js and Redis.  Probably not.
 
 Initial setup
 
@@ -27,18 +22,34 @@ Initial setup
 			sudo make install
 
 - Install Redis
+	- In your browser
+			http://github.com/antirez/redis/tarball/v1.3.8
 	- In your terminal
-			wget http://redis.googlecode.com/files/redis-1.2.5.tar.gz
-			tar xzvf redis-1.2.5.tar.gz
-			cd redis-1.2.5
+			cd yourdownloadsdirectory
+			tar xzvf the_name_of_the_redis_file_you_just_downloaded.tar.gz
+			cd the_name_of_the_redis_file_you_just_downloaded
 			make
 			sudo mv redis-server /usr/bin/
 			sudo mv redis-cli /usr/bin/
 
-- Install Chalk Graffiti
+- Install Street Hoarding
 	- In your terminal
-			git clone git://github.com/maryrosecook/chalkgraffiti
-			cd chalkgraffiti
+			redis-server
+	- In another tab in your terminal
+			git clone git://github.com/maryrosecook/streethoarding
+			cd streethoarding
 			node server.js
 	- In your web browser
-			- Visit http://localhost:3000
+			http://localhost:3000
+			
+Thanks
+
+- Ryan Dahl
+	For Node.js
+	http://nodejs.org
+- Brian Hammond
+	For the Node.js Redis client.
+	http://github.com/fictorial/redis-node-client/
+- James Coglan
+	For the patient explanations of JavaScript and event-driven programming, and improvements to the code.
+	http://jcoglan.com
