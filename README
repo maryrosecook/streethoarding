@@ -40,10 +40,10 @@ Initial setup
 			
 - Run
 	- In your terminal
+			redis-server
+	- In another terminal
 			cd the_street_hoarding_directory
 			node server.js
-	- In another terminal
-			redis-server
 	- In your web browser
 			http://localhost:3000
 			
