@@ -4,10 +4,10 @@ var qs = require("querystring");
 var redis = require("./redisclient");
 var fu = require("./fu");
 
-
 // basic setup
 HOST = null; //localhost
 PORT = 3000;
+var messageRequests = []
 fu.listen(PORT, HOST);
 initialSetup();
 
@@ -18,10 +18,19 @@ fu.get("/client.js", fu.staticHandler("client.js"));
 fu.get("/jquery-1.2.6.min.js", fu.staticHandler("jquery-1.2.6.min.js"));
 
 // lets client send message to server
+var latestMessageReceived = new Date().getTime();
 fu.get("/send_message", function (req, res) {
   var message = qs.parse(url.parse(req.url).query).message;
   storeMessage(message, function() {
     res.simpleJSON(200, {});
+		latestMessageReceived = new Date().getTime();
+
+		// respond to queued message requests from clients now that we have a new message to send out	
+		while (messageRequests.length > 0)
+		{
+			var messageRequest = messageRequests.shift();
+			messageRequest.callback(messageRequest.res);
+		}
   });
 });
 
@@ -36,17 +45,27 @@ function storeMessage(message, callback) {
 	});
 }
 
-// returns latest message to client
+// if new message available for client, return it immediately,
+// or queue request to be dealt with next time new message comes in
 fu.get("/latest_message", function (req, res) {
+	var since = parseInt(qs.parse(url.parse(req.url).query).since);
+
+	if(since < latestMessageReceived) // new message since client last requested
+    sendLatestMessageToClient(res); // send it straight to them
+  else
+    messageRequests.push({ callback: sendLatestMessageToClient, res: res }); // queue up the requst
+});
+
+// retrieves latest message and sends it to user
+function sendLatestMessageToClient(res) {
 	var redisClient = new redis.createClient();
 	redisClient.stream.addListener("connect", function () {
 		redisClient.lindex('messages', 0, function (err, value) {
-			res.simpleJSON(200, { message: value.toString() });
+			res.simpleJSON(200, { message: value.toString(), timestamp: new Date().getTime() });
 			redisClient.close();
 		});
 	});
-});
-
+}
 
 // returns true if send message already stored (already said)
 fu.get("/unique_chalk", function (req, res) {

@@ -61,20 +61,18 @@ function clientValid(message) {
 }
 
 var transmission_errors = 0;
-var prevMessage = "";
+var lastMessageReceived = 0; // a long time ago
 function longPoll (data) {
-	// if (transmission_errors > 2) {
-	// 	return;
-	// }
-	if (data && data.message && prevMessage != data.message) {
+	if (data && data.message) {
 		updateMessage(data.message);
-		prevMessage = data.message;
+		lastMessageReceived = new Date().getTime();
 	}
 
 	$.ajax({ cache: false,
 				 	 type: "GET",
 				 	 url: "/latest_message",
 				 	 dataType: "json",
+					 data: { since: lastMessageReceived },
 				 	 error: function () {
 						 transmission_errors += 1;
 						 setTimeout(longPoll, 10*1000);
