@@ -1,12 +1,12 @@
 $(window).load(function() {
 	// put focus in text field
 	$("input:visible:enabled:first").focus();
-	
+
 	// deal with input to text field
 	$("#message_field").keypress(function (e) {
 		if (e.keyCode != 13) /* Return */
 			return;
-			
+
 		var message = $("#message_field").attr("value").replace("\n", "");
 		var errorMessage = clientValid(message);
 		if(errorMessage === null)
@@ -54,9 +54,7 @@ function clientValid(message) {
 		errorMessage = "tooo long";
 	else if(util.isBasically(v.stupid, message))
 		errorMessage = "be more original";
-	else if(util.isBasically(v.diez, message))
-		errorMessage = "oh, for Christ's sake";
-		
+
 	return errorMessage;
 }
 
@@ -75,7 +73,7 @@ function longPoll (data) {
 					 data: { since: lastMessageReceived },
 				 	 error: function () {
 						 transmission_errors += 1;
-						 setTimeout(longPoll, 10*1000);
+						 setTimeout(longPoll, 1);
 					 },
 				 	 success: function (data) {
 						 setTimeout(function () {
@@ -91,11 +89,11 @@ util = {
 		var blank = /^\s*$/;
 		return (text.match(blank) !== null);
 	},
-	
+
 	trim: function(str) {
 		return str.replace(/^\s+|\s+$/g,"");
 	},
-	
+
 	isBasically: function(arr, text) {
 		var is = false;
 		text = this.trim(text).toLowerCase();
@@ -113,9 +111,8 @@ util = {
 
 v = {
 	stupid: ["fag", "cock"],
-	diez: ["a team"],
 	MAX_LENGTH: 77,
-	
+
 	isTooLong: function(text) {
 		return text.length > this.MAX_LENGTH;
 	}
