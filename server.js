@@ -6,7 +6,7 @@ var fu = require("./fu");
 
 // basic setup
 HOST = null; //localhost
-PORT = 3000;
+PORT = process.env.PORT || 3000;
 var messageRequests = []
 fu.listen(PORT, HOST);
 initialSetup();
@@ -25,7 +25,7 @@ fu.get("/send_message", function (req, res) {
     res.simpleJSON(200, {});
 		latestMessageReceived = new Date().getTime();
 
-		// respond to queued message requests from clients now that we have a new message to send out	
+		// respond to queued message requests from clients now that we have a new message to send out
 		while (messageRequests.length > 0)
 		{
 			var messageRequest = messageRequests.shift();
@@ -70,7 +70,7 @@ function sendLatestMessageToClient(res) {
 // returns true if send message already stored (already said)
 fu.get("/unique_chalk", function (req, res) {
 	var new_message = qs.parse(url.parse(req.url).query).message;
-	
+
 	var redisClient = new redis.createClient();
 	redisClient.stream.addListener("connect", function () {
 		redisClient.lrange('messages', 0, -1, function (err, value) {
@@ -82,7 +82,7 @@ fu.get("/unique_chalk", function (req, res) {
 					uniqueChalk = false;
 					break;
 				}
-			
+
 			res.simpleJSON(200, { message: uniqueChalk });
 		});
 	});
