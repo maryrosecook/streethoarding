@@ -90,18 +90,18 @@ fu.get("/unique_chalk", function (req, res) {
 
 // setup of initial message if required
 function initialSetup() {
-  var redisClient = makeRedisClient();
-	redisClient.stream.addListener("connect", function () {
-		redisClient.exists('messages', function (err, value) {
-			if(value == 0)
-			{
-				storeMessage("We liked the same music, we liked the same bands, we liked the same clothes.", function() {
-			    res.simpleJSON(200, {});
-			  });
-			}
-			redisClient.close();
-		});
-	});
+  // var redisClient = makeRedisClient();
+  //   redisClient.stream.addListener("connect", function () {
+  //   	redisClient.exists('messages', function (err, value) {
+  //   		if(value == 0)
+  //   		{
+  //   			storeMessage("We liked the same music, we liked the same bands, we liked the same clothes.", function() {
+  //   		    res.simpleJSON(200, {});
+  //   		  });
+  //   		}
+  //   		redisClient.close();
+  //   	});
+  //   });
 }
 
 function makeRedisClient() {
