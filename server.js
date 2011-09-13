@@ -36,7 +36,7 @@ fu.get("/send_message", function (req, res) {
 
 // put message in list and store it in quick access latest_message var
 function storeMessage(message, callback) {
-  var redisClient = new redis.createClient();
+  var redisClient = makeRedisClient();
 	redisClient.stream.addListener("connect", function () {
 	  redisClient.lpush('messages', message, function (err, value) {
 	    redisClient.close();
@@ -58,7 +58,7 @@ fu.get("/latest_message", function (req, res) {
 
 // retrieves latest message and sends it to user
 function sendLatestMessageToClient(res) {
-	var redisClient = new redis.createClient();
+  var redisClient = makeRedisClient();
 	redisClient.stream.addListener("connect", function () {
 		redisClient.lindex('messages', 0, function (err, value) {
 			res.simpleJSON(200, { message: value.toString(), timestamp: new Date().getTime() });
@@ -71,7 +71,7 @@ function sendLatestMessageToClient(res) {
 fu.get("/unique_chalk", function (req, res) {
 	var new_message = qs.parse(url.parse(req.url).query).message;
 
-	var redisClient = new redis.createClient();
+  var redisClient = makeRedisClient();
 	redisClient.stream.addListener("connect", function () {
 		redisClient.lrange('messages', 0, -1, function (err, value) {
 			redisClient.close();
@@ -90,7 +90,7 @@ fu.get("/unique_chalk", function (req, res) {
 
 // setup of initial message if required
 function initialSetup() {
-	var redisClient = new redis.createClient();
+  var redisClient = makeRedisClient();
 	redisClient.stream.addListener("connect", function () {
 		redisClient.exists('messages', function (err, value) {
 			if(value == 0)
@@ -103,3 +103,15 @@ function initialSetup() {
 		});
 	});
 }
+
+function makeRedisClient() {
+  if(process.env.REDISTOGO_URL)
+  {
+    var rtg = require("url").parse(process.env.REDISTOGO_URL);
+    var redis = require("./redisclient").createClient(rtg.port, rtg.hostname);
+    redis.auth(rtg.auth.split(":")[1]);
+    return redis;
+  }
+  else
+    return require("./redisclient").createClient();
+};

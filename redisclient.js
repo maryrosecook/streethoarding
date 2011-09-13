@@ -46,16 +46,16 @@ var net = require("net"),
     COLON     = exports.COLON     = 0x3A, // :
     CR        = exports.CR        = 0x0D, // \r
     LF        = exports.LF        = 0x0A, // \n
-                                
+
     NONE      = exports.NONE      = "NONE",
-    BULK      = exports.BULK      = "BULK",     
+    BULK      = exports.BULK      = "BULK",
     MULTIBULK = exports.MULTIBULK = "MULTIBULK",
-    INLINE    = exports.INLINE    = "INLINE",   
-    INTEGER   = exports.INTEGER   = "INTEGER",  
-    ERROR     = exports.ERROR     = "ERROR";    
+    INLINE    = exports.INLINE    = "INLINE",
+    INTEGER   = exports.INTEGER   = "INTEGER",
+    ERROR     = exports.ERROR     = "ERROR";
 
 function debugFilter(buffer, len) {
-    // Redis is binary-safe but assume for debug display that 
+    // Redis is binary-safe but assume for debug display that
     // the encoding of textual data is UTF-8.
 
     var filtered = buffer.utf8Slice(0, len);
@@ -68,7 +68,7 @@ function debugFilter(buffer, len) {
 }
 
 // fnmatch mirrors (mostly) the functionality of fnmatch(3) at least
-// in the same way as Redis.  
+// in the same way as Redis.
 
 var qmarkRE = /\?/g;
 var starRE  = /\*/g;
@@ -103,7 +103,7 @@ ReplyParser.prototype.clearState = function () {
 };
 
 ReplyParser.prototype.clearMultiBulkState = function () {
-    this.multibulkReplies = null; 
+    this.multibulkReplies = null;
     this.multibulkRepliesExpected = null;
 };
 
@@ -126,7 +126,7 @@ ReplyParser.prototype.feed = function (inbound) {
             }
         }
 
-        // Just a state transition on '*', '+', etc.?  
+        // Just a state transition on '*', '+', etc.?
 
         if (typeBefore != this.type)
             continue;
@@ -142,9 +142,9 @@ ReplyParser.prototype.feed = function (inbound) {
             if (self.multibulkReplies != null) {
                 self.multibulkReplies.push(reply);
                 if (--self.multibulkRepliesExpected == 0) {
-                    self.onReply.call(self.thisArg, { 
-                        type:  MULTIBULK, 
-                        value: self.multibulkReplies 
+                    self.onReply.call(self.thisArg, {
+                        type:  MULTIBULK,
+                        value: self.multibulkReplies
                     });
                     self.clearMultiBulkState();
                 }
@@ -160,7 +160,7 @@ ReplyParser.prototype.feed = function (inbound) {
             switch (this.type) {
                 case INLINE:
                 case ERROR:
-                    // CR denotes end of the inline/error value.  
+                    // CR denotes end of the inline/error value.
                     // +OK\r\n
                     //    ^
 
@@ -170,7 +170,7 @@ ReplyParser.prototype.feed = function (inbound) {
                     break;
 
                 case INTEGER:
-                    // CR denotes the end of the integer value.  
+                    // CR denotes the end of the integer value.
                     // :42\r\n
                     //    ^
 
@@ -185,7 +185,7 @@ ReplyParser.prototype.feed = function (inbound) {
                         // $5\r\nhello\r\n
                         //   ^
 
-                        var bulkLengthExpected = 
+                        var bulkLengthExpected =
                             parseInt(this.valueBuffer.asciiSlice(0, this.valueBufferLen), 10);
 
                         if (bulkLengthExpected <= 0) {
@@ -210,7 +210,7 @@ ReplyParser.prototype.feed = function (inbound) {
                         // with the reply specification.
                         // $11\r\nhello\rworld\r\n
                         //             ^
-                        
+
                         this.valueBuffer[this.valueBufferLen++] = inbound[i];
                     }
                     break;
@@ -221,7 +221,7 @@ ReplyParser.prototype.feed = function (inbound) {
                     // *2\r\n$5\r\nhello\r\n$5\r\nworld\r\n
                     //   ^
 
-                    var multibulkRepliesExpected = 
+                    var multibulkRepliesExpected =
                         parseInt(this.valueBuffer.asciiSlice(0, this.valueBufferLen), 10);
 
                     if (multibulkRepliesExpected <= 0) {
@@ -243,7 +243,7 @@ ReplyParser.prototype.feed = function (inbound) {
 
         // If the current value buffer is too big, create a new buffer, copy in
         // the old buffer, and replace the old buffer with the new buffer.
- 
+
         if (this.valueBufferLen === this.valueBuffer.length) {
             var newBuffer = new Buffer(this.valueBuffer.length * 2);
             this.valueBuffer.copy(newBuffer, 0, 0);
@@ -321,11 +321,11 @@ Client.prototype.onReply_ = function (reply) {
         if (exports.debugMode) sys.debug("error: " + errorMessage);
         this.callbacks.shift()(errorMessage, null); // err, reply
         return;
-    } 
+    }
 
-    // PUBSUB message?  
+    // PUBSUB message?
 
-    if (reply.type === MULTIBULK && 
+    if (reply.type === MULTIBULK &&
         reply.value instanceof Array &&
         reply.value.length === 3 &&            // ['message', channel, payload]
         reply.value[0].value.length === 7 &&   // 'message'
@@ -336,7 +336,7 @@ Client.prototype.onReply_ = function (reply) {
         var channelCallback = this.channelCallbacks[channelNameOrPattern];
 
         if (typeof(channelCallback) == 'undefined') {
-            // No 1:1 channel name match. 
+            // No 1:1 channel name match.
             //
             // Perhaps the subscription was for a pattern (PSUBSCRIBE)?
             // Redis does not send the pattern that matched from an
@@ -344,12 +344,12 @@ Client.prototype.onReply_ = function (reply) {
             // channel name instead.  Thus, let's try to fnmatch the
             // channel the message was published to/on to a subscribed
             // pattern, and callback the associated function.
-            // 
+            //
             // A -> Redis     PSUBSCRIBE foo.*
             // B -> Redis     PUBLISH foo.bar hello
             // Redis -> A     MESSAGE foo.bar hello   (no pattern specified)
 
-            var channelNamesOrPatterns = 
+            var channelNamesOrPatterns =
                 Object.getOwnPropertyNames(this.channelCallbacks);
 
             for (var i=0; i < channelNamesOrPatterns.length; ++i) {
@@ -387,10 +387,10 @@ Client.prototype.onReply_ = function (reply) {
 function maybeAsNumber(str) {
     var value = parseInt(str, 10);
 
-    if (isNaN(value)) 
+    if (isNaN(value))
         value = parseFloat(str);
 
-    if (isNaN(value)) 
+    if (isNaN(value))
         return str;
 
     return value;
@@ -406,7 +406,7 @@ function maybeConvertReplyValue(commandName, reply) {
     // multiplexing_api:kqueue
     // process_id:11604
     // ..."
-    // 
+    //
     // We convert that to a JS object like:
     // { redis_version: '1.3.8'
     // , arch_bits: '64'
@@ -429,19 +429,19 @@ function maybeConvertReplyValue(commandName, reply) {
     // is a key and value for the Redis HASH.  We convert this into
     // a JS object.
 
-    if (commandName === 'hgetall' && 
+    if (commandName === 'hgetall' &&
         reply.type === MULTIBULK &&
         reply.value.length % 2 === 0) {
 
         var hash = {};
-        for (var i=0; i<reply.value.length; i += 2) 
+        for (var i=0; i<reply.value.length; i += 2)
             hash[reply.value[i].value] = reply.value[i + 1].value;
         return hash;
     }
 
     // Redis returns "+OK\r\n" to signify success.
     // We convert this into a JS boolean with value true.
-    
+
     if (reply.type === INLINE && reply.value.asciiSlice(0,2) === 'OK')
         return true;
 
@@ -467,7 +467,7 @@ function maybeConvertReplyValue(commandName, reply) {
 
 exports.maybeConvertReplyValue_ = maybeConvertReplyValue;
 
-var commands = [ 
+var commands = [
     "append",
     "auth",
     "bgsave",
@@ -601,9 +601,9 @@ Client.prototype.sendCommand = function () {
                  commandNameLength + CRLF_LEN;
 
     // Then, each argument is serialized as:
-    //   "$<length of arg>\r\n<arg>\r\n".  
+    //   "$<length of arg>\r\n<arg>\r\n".
     //
-    // Note that we wish to be "binary safe" which means that an 
+    // Note that we wish to be "binary safe" which means that an
     // argument may be a String, Number, or even a Buffer.
     //
     // Any argument that is not a Buffer but responds to toString()
@@ -660,16 +660,16 @@ Client.prototype.sendCommand = function () {
     this.callbacks.push(callback);
     this.stream.write(requestBuffer);
 
-    if (exports.debugMode) 
-        sys.debug("[SEND (" + offset + " bytes)] " + 
+    if (exports.debugMode)
+        sys.debug("[SEND (" + offset + " bytes)] " +
                   debugFilter(requestBuffer, requestBuffer.length));
 };
 
 commands.forEach(function (commandName) {
     Client.prototype[commandName] = function () {
-        if (this.stream.readyState != "open") 
+        if (this.stream.readyState != "open")
             throw new Error("Sorry, the command cannot be sent to Redis. " +
-                            "The connection state is '" + 
+                            "The connection state is '" +
                             this.stream.readyState + "'.");
 
         var args = Array.prototype.slice.call(arguments);
@@ -681,14 +681,14 @@ commands.forEach(function (commandName) {
 // Wraps 'subscribe' and 'psubscribe' methods to manage a single
 // callback function per subscribed channel name/pattern.
 //
-// 'nameOrPattern' is a channel name like "hello" or a pattern like 
+// 'nameOrPattern' is a channel name like "hello" or a pattern like
 // "h*llo", "h?llo", or "h[ae]llo".
 //
-// 'callback' is a function that is called back with 2 args: 
+// 'callback' is a function that is called back with 2 args:
 // channel name/pattern and message payload.
 //
-// Note: You are not permitted to do anything but subscribe to 
-// additional channels or unsubscribe from subscribed channels 
+// Note: You are not permitted to do anything but subscribe to
+// additional channels or unsubscribe from subscribed channels
 // when there are >= 1 subscriptions active.  Should you need to
 // issue other commands, use a second client instance.
 
@@ -701,8 +701,8 @@ Client.prototype.subscribeTo = function (nameOrPattern, callback) {
 
     this.channelCallbacks[nameOrPattern] = callback;
 
-    var method = nameOrPattern.match(/[\*\?\[]/) 
-               ? "psubscribe" 
+    var method = nameOrPattern.match(/[\*\?\[]/)
+               ? "psubscribe"
                : "subscribe";
 
     this[method](nameOrPattern);
@@ -714,8 +714,8 @@ Client.prototype.unsubscribeFrom = function (nameOrPattern) {
 
     delete this.channelCallbacks[nameOrPattern];
 
-    var method = nameOrPattern.match(/[\*\?\[]/) 
-               ? "punsubscribe" 
+    var method = nameOrPattern.match(/[\*\?\[]/)
+               ? "punsubscribe"
                : "unsubscribe";
 
     this[method](nameOrPattern);
@@ -727,13 +727,13 @@ Client.prototype.unsubscribeFrom = function (nameOrPattern) {
 
 exports.convertMultiBulkBuffersToUTF8Strings = function (o) {
     if (o instanceof Array) {
-        for (var i=0; i<o.length; ++i) 
-            if (o[i] instanceof Buffer) 
+        for (var i=0; i<o.length; ++i)
+            if (o[i] instanceof Buffer)
                 o[i] = o[i].utf8Slice(0, o[i].length);
     } else if (o instanceof Object) {
         var props = Object.getOwnPropertyNames(o);
-        for (var i=0; i<props.length; ++i) 
-            if (o[props[i]] instanceof Buffer) 
+        for (var i=0; i<props.length; ++i)
+            if (o[props[i]] instanceof Buffer)
                 o[props[i]] = o[props[i]].utf8Slice(0, o[props[i]].length);
     }
 };
