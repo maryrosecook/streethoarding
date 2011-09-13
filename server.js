@@ -1,12 +1,12 @@
 var sys = require("sys");
 var url = require("url");
 var qs = require("querystring");
-var redis = require("./redisclient");
 var fu = require("./fu");
 
 // basic setup
 HOST = null; //localhost
 PORT = process.env.PORT || 3000;
+var redisClient = makeRedisClient();
 var messageRequests = []
 fu.listen(PORT, HOST);
 initialSetup();
@@ -36,13 +36,9 @@ fu.get("/send_message", function (req, res) {
 
 // put message in list and store it in quick access latest_message var
 function storeMessage(message, callback) {
-  var redisClient = makeRedisClient();
-	redisClient.stream.addListener("connect", function () {
 	  redisClient.lpush('messages', message, function (err, value) {
-	    redisClient.close();
 	    callback();
 	  });
-	});
 }
 
 // if new message available for client, return it immediately,
@@ -58,23 +54,16 @@ fu.get("/latest_message", function (req, res) {
 
 // retrieves latest message and sends it to user
 function sendLatestMessageToClient(res) {
-  var redisClient = makeRedisClient();
-	redisClient.stream.addListener("connect", function () {
 		redisClient.lindex('messages', 0, function (err, value) {
 			res.simpleJSON(200, { message: value.toString(), timestamp: new Date().getTime() });
-			redisClient.close();
 		});
-	});
 }
 
 // returns true if send message already stored (already said)
 fu.get("/unique_chalk", function (req, res) {
 	var new_message = qs.parse(url.parse(req.url).query).message;
 
-  var redisClient = makeRedisClient();
-	redisClient.stream.addListener("connect", function () {
 		redisClient.lrange('messages', 0, -1, function (err, value) {
-			redisClient.close();
 			uniqueChalk = true;
 			for(i in value)
 				if(value[i] == new_message)
@@ -85,34 +74,29 @@ fu.get("/unique_chalk", function (req, res) {
 
 			res.simpleJSON(200, { message: uniqueChalk });
 		});
-	});
 });
 
 // setup of initial message if required
 function initialSetup() {
-  // var redisClient = makeRedisClient();
-  //   redisClient.stream.addListener("connect", function () {
-  //   	redisClient.exists('messages', function (err, value) {
-  //   		if(value == 0)
-  //   		{
-  //   			storeMessage("We liked the same music, we liked the same bands, we liked the same clothes.", function() {
-  //   		    res.simpleJSON(200, {});
-  //   		  });
-  //   		}
-  //   		redisClient.close();
-  //   	});
-  //   });
+    	redisClient.exists('messages', function (err, value) {
+    		if(value == 0)
+    		{
+    			storeMessage("We liked the same music, we liked the same bands, we liked the same clothes.", function() {
+    		    res.simpleJSON(200, {});
+    		  });
+    		}
+    	});
 }
 
 function makeRedisClient() {
   if(process.env.REDISTOGO_URL)
   {
     var rtg = require("url").parse(process.env.REDISTOGO_URL);
-    var redis = require("./redisclient").createClient(rtg.port, rtg.hostname);
+    var redis = require("redis").createClient(rtg.port, rtg.hostname);
     console.log(rtg.port, rtg.hostname, rtg.auth.split(":")[1])
     redis.auth(rtg.auth.split(":")[1]);
     return redis;
   }
   else
-    return require("./redisclient").createClient();
+    return require("redis").createClient();
 };
