@@ -109,6 +109,7 @@ function makeRedisClient() {
   {
     var rtg = require("url").parse(process.env.REDISTOGO_URL);
     var redis = require("./redisclient").createClient(rtg.port, rtg.hostname);
+    console.log(rtg.port, rtg.hostname, rtg.auth.split(":")[1])
     redis.auth(rtg.auth.split(":")[1]);
     return redis;
   }
